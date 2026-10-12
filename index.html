@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080814">
+<title>NeonDrive</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080814;color:white;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+header{padding:24px 18px;background:#080814;font-size:22px;font-weight:900;letter-spacing:3px}
+header span{color:#27d8ff;text-shadow:0 0 12px #27d8ff}
+.badge{float:right;font-size:10px;border:1px solid #bd39ff;padding:7px;border-radius:20px;letter-spacing:1px}
+#map{height:calc(100dvh - 330px);min-height:280px;background:#09091a}
+.panel{padding:16px;background:#0d0d20;border:1px solid #bd39ff66;border-radius:20px;margin:12px;box-shadow:0 0 24px #bd39ff22}
+input{width:100%;padding:14px;background:#101024;border:1px solid #393052;border-radius:12px;color:white;font-size:16px;margin-bottom:10px}
+button,.waze{display:block;width:100%;padding:15px;border:0;border-radius:12px;text-align:center;font-weight:800;text-decoration:none;margin-top:8px}
+button{background:linear-gradient(110deg,#bd39ff,#27d8ff);color:#080814}
+.waze{background:#0b2331;border:1px solid #27d8ff;color:#d9faff}
+.stats{display:flex;justify-content:space-between;color:#aaa;font-size:10px;margin-top:16px}
+.stats strong{display:block;color:white;font-size:12px;margin-top:5px}
+.note{text-align:center;color:#999;font-size:10px;margin-top:12px}
+.pin{width:17px;height:17px;border-radius:50%;background:#27d8ff;border:3px solid white;box-shadow:0 0 0 6px #27d8ff30,0 0 22px #27d8ff}
+.leaflet-container{background:#09091a}
+.leaflet-control-attribution{font-size:9px!important}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#111126;color:white}
+</style>
+</head>
+<body>
+<header>NEON<span>DRIVE</span><div class="badge">NIGHT MODE ON</div></header>
+<div id="map"></div>
+<div class="panel">
+<input id="destination" placeholder="Where are we going?">
+<button id="find">FIND DESTINATION</button>
+<a class="waze" id="waze" href="https://www.waze.com/ul">↗ OPEN IN WAZE</a>
+<div class="stats">
+<div>MAP STYLE<strong>NEON NIGHT</strong></div>
+<div>GPS<strong id="gps">WAITING</strong></div>
+<div>NAVIGATION<strong>WAZE</strong></div>
+</div>
+<div class="note">Neon navigation concept • Waze opens separately</div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const map=L.map('map').setView([-26.188,28.320],13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap © CARTO'
+}).addTo(map);
+const points=[[-26.188,28.320],[-26.182,28.327],[-26.179,28.335],[-26.171,28.341],[-26.166,28.351]];
+L.polyline(points,{color:'#bd39ff',weight:12,opacity:.4}).addTo(map);
+L.polyline(points,{color:'#27d8ff',weight:4}).addTo(map);
+let location=null;
+const icon=L.divIcon({className:'',html:'<div class="pin"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+function updateWaze(){
+const q=document.getElementById('destination').value.trim();
+document.getElementById('waze').href=q?'https://www.waze.com/ul?q='+encodeURIComponent(q)+'&navigate=yes':'https://www.waze.com/ul';
+}
+document.getElementById('destination').addEventListener('input',updateWaze);
+document.getElementById('find').addEventListener('click',()=>{
+if(!document.getElementById('destination').value.trim()){
+document.getElementById('destination').focus();return;
+}
+updateWaze();
+document.getElementById('waze').textContent='↗ OPEN ROUTE IN WAZE';
+});
+if(navigator.geolocation){
+navigator.geolocation.getCurrentPosition(p=>{
+location=[p.coords.latitude,p.coords.longitude];
+map.setView(location,15);
+L.marker(location,{icon}).addTo(map).bindPopup('YOUR LOCATION');
+document.getElementById('gps').textContent='ACTIVE';
+},()=>{document.getElementById('gps').textContent='UNAVAILABLE';});
+}else{document.getElementById('gps').textContent='UNAVAILABLE';}
+</script>
+</body>
+</html>
